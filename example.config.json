@@ -1,0 +1,9 @@
+{
+  "application": {
+    "service": "liveness-detection",
+    "environment": "development"
+  },
+  "http": {
+    "port": ":3301"
+  }
+}
