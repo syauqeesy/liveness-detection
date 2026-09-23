@@ -4,14 +4,20 @@ from pathlib import Path
 
 
 @dataclass
-class ModelConfiguration:
-    name: str
-    url: str
+class ApplicationConfiguration:
+    service: str
+    environment: str
+
+
+@dataclass
+class GRPCConfiguration:
+    port: str
 
 
 @dataclass
 class Configuration:
-    models: ModelConfiguration
+    application: ApplicationConfiguration
+    grpc: GRPCConfiguration
 
 
 def new_configuration(path: Path) -> Configuration:
@@ -19,9 +25,11 @@ def new_configuration(path: Path) -> Configuration:
         data = json.load(file)
 
     return Configuration(
-        models=ModelConfiguration(
-            name=data["models"]["name"],
-            url=data["models"]["url"],
+        application=ApplicationConfiguration(
+            service=data["application"]["service"],
+            environment=data["application"]["environment"],
         ),
-
+        grpc=GRPCConfiguration(
+            port=data["grpc"]["port"],
+        ),
     )
