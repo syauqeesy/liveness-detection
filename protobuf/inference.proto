@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package inference;
+
+option go_package = "/inference";
+
+service InferenceService {
+  rpc Predict(PredictionRequest) returns (PredictionResponse);
+}
+
+message PredictionRequest {
+  bytes image = 1;
+}
+
+message PredictionResponse {
+  string result = 1;
+  float live = 2;
+  float spoof = 3;
+}
