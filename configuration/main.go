@@ -9,10 +9,16 @@ type Configuration struct {
 	Application struct {
 		Service     string `json:"service"`
 		Environment string `json:"environment"`
+		Client      string `json:"client"`
 	}
 	Http struct {
 		Port string `json:"port"`
 	} `json:"http"`
+	GRPC struct {
+		Service struct {
+			Detector string `json:"detector"`
+		} `json:"service"`
+	} `json:"grpc"`
 }
 
 func NewConfiguration(path string) (*Configuration, error) {
