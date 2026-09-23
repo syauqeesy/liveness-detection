@@ -1,30 +1,67 @@
+from concurrent import futures
+
+import grpc
+
 from pathlib import Path
 
-from keras.applications import MobileNetV2
-from keras.utils import get_file
+import protobuf.compiled.inference_pb2_grpc
+import protobuf.compiled.inference_pb2
+import foundation.configuration
 
-from foundation.configuration import new_configuration
+import foundation.model
 
 
-keras_dir = Path("./.keras")
-model_dir = Path("./.keras/models")
+model = foundation.model.new_model(Path("anti-spoof-mn3_float32.tflite"))
+configuration = foundation.configuration.new_configuration(Path("config.json"))
+
+
+class InferenceService(
+    protobuf.compiled.inference_pb2_grpc.InferenceServiceServicer
+):
+    def Predict(self, request, context):
+        if not request.image:
+            context.set_code(
+                grpc.StatusCode.INVALID_ARGUMENT
+            )
+            context.set_details("Image is empty")
+            return protobuf.compiled.inference_pb2.PredictionResponse()
+
+        try:
+            result = model.execute(request.image)
+
+            return protobuf.compiled.inference_pb2.PredictionResponse(
+                result=result["result"],
+                live=result["live"],
+                spoof=result["spoof"],
+            )
+
+        except Exception as error:
+            context.set_code(
+                grpc.StatusCode.INTERNAL
+            )
+            context.set_details(str(error))
+            return protobuf.compiled.inference_pb2.PredictionResponse()
 
 
 def main():
-    configuration = new_configuration(Path("./config.json"))
-
-    model_dir.mkdir(parents=True, exist_ok=True)
-
-    weights_path = get_file(
-        fname=configuration.models.name,
-        origin=configuration.models.url,
-        cache_dir=keras_dir,
-        cache_subdir="models",
+    server = grpc.server(
+        futures.ThreadPoolExecutor(max_workers=1)
     )
 
-    model = MobileNetV2(weights=weights_path)
+    protobuf.compiled.inference_pb2_grpc.add_InferenceServiceServicer_to_server(
+        InferenceService(),
+        server,
+    )
 
-    model.summary()
+    server.add_insecure_port(
+        "localhost" + configuration.grpc.port
+    )
+
+    server.start()
+
+    print("gRPC server running on " + configuration.grpc.port)
+
+    server.wait_for_termination()
 
 
 if __name__ == "__main__":
