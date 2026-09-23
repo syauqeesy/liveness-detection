@@ -1,18 +1,23 @@
 package service
 
-import "ahmadsyauqi.dev/projects/liveness-detection/configuration"
+import (
+	"github.com/liveness-detection/configuration"
+	grpc_outbound "github.com/liveness-detection/outbound/grpc"
+)
 
 type service struct {
 	Configuration *configuration.Configuration
+	GRPCOutbound  *grpc_outbound.GRPCOutboundService
 }
 
 type Service struct {
 	Inference InferenceService
 }
 
-func NewService(configuration *configuration.Configuration) *Service {
+func NewService(configuration *configuration.Configuration, grpcOutbound *grpc_outbound.GRPCOutboundService) *Service {
 	svc := &service{
 		Configuration: configuration,
+		GRPCOutbound:  grpcOutbound,
 	}
 
 	return &Service{
