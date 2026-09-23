@@ -1,6 +1,9 @@
 {
-  "models": {
-    "name": "mobilenet_v2_weights_tf_dim_ordering_tf_kernels_1.0_224.h5",
-    "url": "https://storage.googleapis.com/tensorflow/keras-applications/mobilenet_v2/mobilenet_v2_weights_tf_dim_ordering_tf_kernels_1.0_224.h5"
+  "application": {
+    "service": "liveness-detection-detector",
+    "environment": "development"
+  },
+  "grpc": {
+    "port": ":3302"
   }
 }
