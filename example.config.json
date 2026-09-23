@@ -1,9 +1,15 @@
 {
   "application": {
     "service": "liveness-detection",
-    "environment": "development"
+    "environment": "development",
+    "client": "http://localhost:5173"
   },
   "http": {
     "port": ":3301"
+  },
+  "grpc": {
+    "service": {
+      "detector": "localhost:3302"
+    }
   }
 }
