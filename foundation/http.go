@@ -4,33 +4,37 @@ import (
 	"context"
 	"net/http"
 
-	"ahmadsyauqi.dev/projects/liveness-detection/common"
-	"ahmadsyauqi.dev/projects/liveness-detection/configuration"
-	"ahmadsyauqi.dev/projects/liveness-detection/handler"
-	"ahmadsyauqi.dev/projects/liveness-detection/middleware"
-	"ahmadsyauqi.dev/projects/liveness-detection/service"
+	"github.com/liveness-detection/common"
+	"github.com/liveness-detection/configuration"
+	"github.com/liveness-detection/handler"
+	"github.com/liveness-detection/middleware"
+	grpc_outbound "github.com/liveness-detection/outbound/grpc"
+	"github.com/liveness-detection/service"
 )
 
 type httpFoundation struct {
-	configuration *configuration.Configuration
-	mux           *http.ServeMux
-	server        *http.Server
-	service       *service.Service
-	handler       *handler.Handler
-	logger        common.Logger
-	http          common.CommonHttp
+	configuration       *configuration.Configuration
+	mux                 *http.ServeMux
+	server              *http.Server
+	service             *service.Service
+	handler             *handler.Handler
+	logger              common.Logger
+	http                common.CommonHttp
+	grpcOutboundService *grpc_outbound.GRPCOutboundService
 }
 
 func (f *httpFoundation) Setup() error {
 	f.mux = http.NewServeMux()
 
-	f.service = service.NewService(f.configuration)
+	f.http = common.NewHttp(f.logger)
 
-	f.handler = handler.NewHandler(f.mux, f.configuration, f.service)
+	f.grpcOutboundService = grpc_outbound.New(f.configuration)
+
+	f.service = service.NewService(f.configuration, f.grpcOutboundService)
+
+	f.handler = handler.NewHandler(f.mux, f.configuration, f.service, f.http)
 
 	f.logger = common.NewLogger(f.configuration.Application.Service, f.configuration.Application.Environment)
-
-	f.http = common.NewHttp(f.logger)
 
 	f.mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		f.http.ErrorHandler(w, common.CreateException(http.StatusMethodNotAllowed, http.StatusText(http.StatusMethodNotAllowed)), nil)
@@ -38,7 +42,7 @@ func (f *httpFoundation) Setup() error {
 
 	f.server = &http.Server{
 		Addr:    f.configuration.Http.Port,
-		Handler: middleware.Logger(f.logger)(f.mux),
+		Handler: middleware.Cors(f.configuration)(middleware.Logger(f.logger)(f.mux)),
 	}
 
 	return nil
