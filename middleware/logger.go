@@ -5,7 +5,7 @@ import (
 	"time"
 	"uuid"
 
-	"ahmadsyauqi.dev/projects/liveness-detection/common"
+	"github.com/liveness-detection/common"
 )
 
 func Logger(logger common.Logger) func(http.Handler) http.Handler {

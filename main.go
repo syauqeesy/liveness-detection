@@ -8,9 +8,9 @@ import (
 	"syscall"
 	"time"
 
-	"ahmadsyauqi.dev/projects/liveness-detection/common"
-	"ahmadsyauqi.dev/projects/liveness-detection/configuration"
-	"ahmadsyauqi.dev/projects/liveness-detection/foundation"
+	"github.com/liveness-detection/common"
+	"github.com/liveness-detection/configuration"
+	"github.com/liveness-detection/foundation"
 )
 
 const (
