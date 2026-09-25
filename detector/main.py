@@ -1,65 +1,41 @@
 from concurrent import futures
+from pathlib import Path
+from signal import SIGINT, SIGTERM, signal
 
 import grpc
 
-from pathlib import Path
+from foundation.configuration import new_configuration
+from foundation.logger import new_logger
+from foundation.model import new_model
+from service.main import new_service
 
-import protobuf.compiled.inference_pb2_grpc
-import protobuf.compiled.inference_pb2
-import foundation.configuration
-
-import foundation.model
-
-
-model = foundation.model.new_model(Path("anti-spoof-mn3_float32.tflite"))
-configuration = foundation.configuration.new_configuration(Path("config.json"))
-
-
-class InferenceService(
-    protobuf.compiled.inference_pb2_grpc.InferenceServiceServicer
-):
-    def Predict(self, request, context):
-        if not request.image:
-            context.set_code(
-                grpc.StatusCode.INVALID_ARGUMENT
-            )
-            context.set_details("Image is empty")
-            return protobuf.compiled.inference_pb2.PredictionResponse()
-
-        try:
-            result = model.execute(request.image)
-
-            return protobuf.compiled.inference_pb2.PredictionResponse(
-                result=result["result"],
-                live=result["live"],
-                spoof=result["spoof"],
-            )
-
-        except Exception as error:
-            context.set_code(
-                grpc.StatusCode.INTERNAL
-            )
-            context.set_details(str(error))
-            return protobuf.compiled.inference_pb2.PredictionResponse()
+model = new_model(Path("./anti-spoof-mn3"))
+configuration = new_configuration(Path("config.json"))
+logger = new_logger(
+    configuration.application.service, configuration.application.environment
+)
 
 
 def main():
-    server = grpc.server(
-        futures.ThreadPoolExecutor(max_workers=1)
-    )
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=1))
 
-    protobuf.compiled.inference_pb2_grpc.add_InferenceServiceServicer_to_server(
-        InferenceService(),
-        server,
-    )
+    new_service(server, configuration, logger, model)
 
-    server.add_insecure_port(
-        "localhost" + configuration.grpc.port
-    )
+    server.add_insecure_port("localhost" + configuration.grpc.port)
+
+    def shutdown(signum, frame):
+        logger.info("shutdown signal received")
+
+        server.stop(grace=15)
+
+        logger.info("application shutdown completed")
+
+    signal(SIGTERM, shutdown)
+    signal(SIGINT, shutdown)
 
     server.start()
 
-    print("gRPC server running on " + configuration.grpc.port)
+    logger.info("server running on " + configuration.grpc.port)
 
     server.wait_for_termination()
 
