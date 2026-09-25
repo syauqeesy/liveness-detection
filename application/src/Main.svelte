@@ -1,19 +1,24 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import type { InferenceAdapter, InferenceResult } from "./inference/main";
-  import LocalInference from "./inference/local";
-  import CloudInference from "./inference/cloud";
+  import type {
+    InferenceServiceAdapter,
+    InferenceResult,
+  } from "./service/main";
+  import ManagedService from "./service/managed-service";
+  import SelfManagedService from "./service/self-managed-service";
+  import OnDeviceService from "./service/on-device-service";
   import ResultModal from "./ResultModal.svelte";
 
   let IsLoading = true;
   let VideoElement: HTMLVideoElement;
   let Stream: MediaStream | null = null;
   let StreamHeight = 0;
-  let inferenceFinished = false
-  let inferenceResult: InferenceResult | null = null
+  let inferenceFinished = false;
+  let inferenceResult: InferenceResult | null = null;
 
-  const localInference = new LocalInference();
-  const cloudInference = new CloudInference();
+  const managedService = new ManagedService();
+  const selfManagedService = new SelfManagedService();
+  const onDeviceService = new OnDeviceService();
 
   async function startCamera() {
     try {
@@ -98,32 +103,40 @@
     return blob;
   }
 
-  async function execute(type: "local" | "cloud") {
+  async function execute(
+    mode: "managed_service" | "self_managed_service" | "on_device_service",
+  ) {
     try {
       const imageBlob = await takeCroppedPicture();
 
-      let inference: InferenceAdapter;
+      let InferenceService: InferenceServiceAdapter;
 
-      if (type == "local") {
-        inference = localInference;
-      } else {
-        inference = cloudInference;
+      switch (mode) {
+        case "managed_service":
+          InferenceService = managedService;
+          break;
+        case "self_managed_service":
+          InferenceService = selfManagedService;
+          break;
+        case "on_device_service":
+          InferenceService = onDeviceService;
+          break;
       }
 
-      inferenceResult = await inference.execute(imageBlob);
-      inferenceFinished = true
+      inferenceResult = await InferenceService.Predict(imageBlob);
+      inferenceFinished = true;
     } catch (error) {
       console.error("Liveness check failed:", error);
     }
   }
 
-  function onCloseModal () {
-    inferenceFinished = false
-    inferenceResult = null
+  function onCloseModal() {
+    inferenceFinished = false;
+    inferenceResult = null;
   }
 
   onMount(async () => {
-    await localInference.initialize();
+    await onDeviceService.Initialize();
 
     startCamera();
   });
@@ -158,21 +171,23 @@
 
   <section id="camera-control-container" class="flex justify-center gap-5">
     <button
-      on:click={() => execute("local")}
+      on:click={() => execute("managed_service")}
       class="p-3 rounded-xl border-3 font-semibold cursor-pointer hover:bg-black hover:text-white xl:size-fit md:size-fit w-full"
-      >Local Liveness Check</button
+      >Managed Service Liveness Check</button
     >
     <button
-      on:click={() => execute("cloud")}
+      on:click={() => execute("self_managed_service")}
       class="p-3 rounded-xl border-3 font-semibold cursor-pointer hover:bg-black hover:text-white xl:size-fit md:size-fit w-full"
-      >Cloud Liveness Check</button
+      >Self Managed Service Liveness Check</button
+    >
+    <button
+      on:click={() => execute("on_device_service")}
+      class="p-3 rounded-xl border-3 font-semibold cursor-pointer hover:bg-black hover:text-white xl:size-fit md:size-fit w-full"
+      >On Device Service Liveness Check</button
     >
   </section>
 </main>
 
 {#if inferenceFinished && inferenceResult}
-  <ResultModal
-    result={inferenceResult}
-    onClose={onCloseModal}
-  ></ResultModal>
+  <ResultModal result={inferenceResult} onClose={onCloseModal}></ResultModal>
 {/if}
