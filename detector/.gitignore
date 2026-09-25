@@ -1,5 +1,6 @@
 config.json
 .venv
+.venv-dev
 __pycache__
-anti-spoof-mn3_float32.tflite
+anti-spoof-mn3
 
