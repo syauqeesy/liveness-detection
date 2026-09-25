@@ -29,7 +29,7 @@ func NewHandler(mux *http.ServeMux, configuration *configuration.Configuration, 
 		Inference: (*inferenceHandler)(handler),
 	}
 
-	mux.HandleFunc("POST /inference", h.Inference.Execute)
+	mux.HandleFunc("POST /inference/predict", h.Inference.Predict)
 
 	return h
 }

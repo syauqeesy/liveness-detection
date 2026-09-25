@@ -10,12 +10,12 @@ import (
 )
 
 type InferenceService interface {
-	Execute(ctx context.Context, file multipart.File, header *multipart.FileHeader) (*payload.ExecuteInferenceResponse, error)
+	Predict(ctx context.Context, mode string, file multipart.File, header *multipart.FileHeader) (*payload.ExecuteInferenceResponse, error)
 }
 
 type inferenceService service
 
-func (s *inferenceService) Execute(ctx context.Context, file multipart.File, header *multipart.FileHeader) (*payload.ExecuteInferenceResponse, error) {
+func (s *inferenceService) Predict(ctx context.Context, mode string, file multipart.File, header *multipart.FileHeader) (*payload.ExecuteInferenceResponse, error) {
 	imageInBytes, err := io.ReadAll(file)
 	if err != nil {
 		return nil, err
