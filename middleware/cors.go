@@ -3,7 +3,7 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/liveness-detection/configuration"
+	"github.com/syauqeesy/liveness-detection/configuration"
 )
 
 func Cors(configuration *configuration.Configuration) func(http.Handler) http.Handler {

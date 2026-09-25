@@ -3,9 +3,9 @@ package handler
 import (
 	"net/http"
 
-	"github.com/liveness-detection/common"
-	"github.com/liveness-detection/configuration"
-	"github.com/liveness-detection/service"
+	"github.com/syauqeesy/liveness-detection/common"
+	"github.com/syauqeesy/liveness-detection/configuration"
+	"github.com/syauqeesy/liveness-detection/service"
 )
 
 type handler struct {

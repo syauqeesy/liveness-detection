@@ -1,4 +1,4 @@
-module github.com/liveness-detection
+module github.com/syauqeesy/liveness-detection
 
 go 1.27.0
 

@@ -5,8 +5,8 @@ import (
 	"io"
 	"mime/multipart"
 
-	"github.com/liveness-detection/payload"
-	"github.com/liveness-detection/protobuf/compiled/inference"
+	"github.com/syauqeesy/liveness-detection/payload"
+	"github.com/syauqeesy/liveness-detection/pb/compiled/inference"
 )
 
 type InferenceService interface {

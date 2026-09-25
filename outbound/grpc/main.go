@@ -1,8 +1,8 @@
 package grpc_outbound
 
 import (
-	"github.com/liveness-detection/configuration"
-	"github.com/liveness-detection/protobuf/compiled/inference"
+	"github.com/syauqeesy/liveness-detection/configuration"
+	"github.com/syauqeesy/liveness-detection/pb/compiled/inference"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )

@@ -1,8 +1,8 @@
 package service
 
 import (
-	"github.com/liveness-detection/configuration"
-	grpc_outbound "github.com/liveness-detection/outbound/grpc"
+	"github.com/syauqeesy/liveness-detection/configuration"
+	grpc_outbound "github.com/syauqeesy/liveness-detection/outbound/grpc"
 )
 
 type service struct {

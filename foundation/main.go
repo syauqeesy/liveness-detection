@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 
-	"github.com/liveness-detection/common"
-	"github.com/liveness-detection/configuration"
+	"github.com/syauqeesy/liveness-detection/common"
+	"github.com/syauqeesy/liveness-detection/configuration"
 )
 
 type Foundation interface {

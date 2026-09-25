@@ -4,12 +4,12 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/liveness-detection/common"
-	"github.com/liveness-detection/configuration"
-	"github.com/liveness-detection/handler"
-	"github.com/liveness-detection/middleware"
-	grpc_outbound "github.com/liveness-detection/outbound/grpc"
-	"github.com/liveness-detection/service"
+	"github.com/syauqeesy/liveness-detection/common"
+	"github.com/syauqeesy/liveness-detection/configuration"
+	"github.com/syauqeesy/liveness-detection/handler"
+	"github.com/syauqeesy/liveness-detection/middleware"
+	grpc_outbound "github.com/syauqeesy/liveness-detection/outbound/grpc"
+	"github.com/syauqeesy/liveness-detection/service"
 )
 
 type httpFoundation struct {
