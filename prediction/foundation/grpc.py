@@ -18,7 +18,7 @@ class Grpc:
 
         self._server = grpc.server(futures.ThreadPoolExecutor(max_workers=1))
 
-        self._server.add_insecure_port("localhost" + configuration.grpc.port)
+        self._server.add_insecure_port("[::]" + configuration.grpc.port)
 
         signal(SIGTERM, self._shutdown)
         signal(SIGINT, self._shutdown)

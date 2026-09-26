@@ -1,0 +1,31 @@
+services:
+  liveness:
+    image: liveness:v1.0.0
+    container_name: liveness
+    ports:
+      - "5173:80"
+    depends_on:
+      - api-liveness
+
+  api-liveness:
+    image: api-liveness:v1.0.0
+    container_name: api-liveness
+    ports:
+      - "3301:80"
+    volumes:
+      - ../config.json:/app/config.json:ro
+    depends_on:
+      - prediction-liveness
+
+  prediction-liveness:
+    image: prediction-liveness:v1.0.0
+    container_name: prediction-liveness
+    volumes:
+      - ../prediction/config.json:/app/config.json:ro
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]

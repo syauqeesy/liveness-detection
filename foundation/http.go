@@ -3,6 +3,7 @@ package foundation
 import (
 	"context"
 	"net/http"
+	"os"
 
 	"github.com/syauqeesy/liveness-detection/common"
 	"github.com/syauqeesy/liveness-detection/configuration"
@@ -40,8 +41,13 @@ func (f *httpFoundation) Setup() error {
 		f.http.ErrorHandler(w, common.CreateException(http.StatusMethodNotAllowed, http.StatusText(http.StatusMethodNotAllowed)), nil)
 	})
 
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = f.configuration.Http.Port
+	}
+
 	f.server = &http.Server{
-		Addr:    f.configuration.Http.Port,
+		Addr:    port,
 		Handler: middleware.Cors(f.configuration)(middleware.Logger(f.logger)(f.mux)),
 	}
 
