@@ -1,6 +1,5 @@
 config.json
 .venv
-.venv-dev
 __pycache__
 anti-spoof-mn3
 
