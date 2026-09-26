@@ -6,10 +6,14 @@ from foundation.logger import new_logger
 from foundation.model import new_model
 from service.main import new_service
 
-model = new_model(Path("./anti-spoof-mn3"))
 configuration = new_configuration(Path("./config.json"))
+model = new_model(
+    Path("./anti-spoof-mn3"),
+    configuration.application.memory_limit
+)
 logger = new_logger(
-    configuration.application.service, configuration.application.environment
+    configuration.application.service,
+    configuration.application.environment
 )
 
 

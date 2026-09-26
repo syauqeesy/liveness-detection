@@ -7,6 +7,7 @@ from pathlib import Path
 class ApplicationConfiguration:
     service: str
     environment: str
+    memory_limit: int
 
 
 @dataclass
@@ -28,6 +29,7 @@ def new_configuration(path: Path) -> Configuration:
         application=ApplicationConfiguration(
             service=data["application"]["service"],
             environment=data["application"]["environment"],
+            memory_limit=data["application"]["memory_limit"]
         ),
         grpc=GRPCConfiguration(
             port=data["grpc"]["port"],

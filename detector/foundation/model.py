@@ -15,7 +15,9 @@ class InferenceResult:
 
 
 class AntiSpoofModel:
-    def __init__(self, model_path: Path):
+    def __init__(self, model_path: Path, memory_limit: int):
+        self.configure_gpu(memory_limit)
+
         self.model = tf.saved_model.load(str(model_path))
 
         if "serving_default" not in self.model.signatures:
@@ -32,6 +34,21 @@ class AntiSpoofModel:
         self.mean = np.array([151.2405, 119.5950, 107.8395], dtype=np.float32)
 
         self.scale = np.array([63.0105, 56.4570, 55.0035], dtype=np.float32)
+
+    def configure_gpu(self, memory_limit: int) -> None:
+        gpus = tf.config.list_physical_devices("GPU")
+
+        if not gpus:
+            return
+
+        tf.config.set_logical_device_configuration(
+            gpus[0],
+            [
+                tf.config.LogicalDeviceConfiguration(
+                    memory_limit=memory_limit
+                )
+            ],
+        )
 
     def execute(self, image_bytes: bytes) -> InferenceResult:
         image = Image.open(BytesIO(image_bytes)).convert("RGB")
@@ -55,5 +72,5 @@ class AntiSpoofModel:
         )
 
 
-def new_model(model_path: Path) -> AntiSpoofModel:
-    return AntiSpoofModel(model_path)
+def new_model(model_path: Path, memory_limit: int) -> AntiSpoofModel:
+    return AntiSpoofModel(model_path, memory_limit)

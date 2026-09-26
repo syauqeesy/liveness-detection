@@ -65,6 +65,6 @@ class InferenceService(InferenceServiceServicer):
 
             self._logger.info(
                 "prediction completed",
-                "inference_time_ms",
+                "duration_ms",
                 round(inference_time_ms, 2),
             )

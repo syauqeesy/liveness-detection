@@ -1,7 +1,8 @@
 {
   "application": {
     "service": "liveness-detection-detector",
-    "environment": "development"
+    "environment": "development",
+    "memory_limit": 512
   },
   "grpc": {
     "port": ":3302"
