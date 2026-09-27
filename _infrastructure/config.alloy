@@ -1,0 +1,39 @@
+logging {
+  level  = "info"
+  format = "logfmt"
+}
+
+discovery.docker "liveness" {
+  host = "unix:///var/run/docker.sock"
+}
+
+discovery.relabel "liveness_logs" {
+  targets = []
+
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "^/(api-liveness|self-managed-prediction-service-liveness|managed-prediction-service-liveness)$"
+    action        = "keep"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "^/(.*)$"
+    target_label  = "container"
+    replacement   = "$1"
+  }
+}
+
+loki.source.docker "liveness" {
+  host          = "unix:///var/run/docker.sock"
+  targets       = discovery.docker.liveness.targets
+  labels        = {"application" = "liveness-detection"}
+  relabel_rules = discovery.relabel.liveness_logs.rules
+  forward_to    = [loki.write.liveness.receiver]
+}
+
+loki.write "liveness" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}
