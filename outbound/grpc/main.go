@@ -8,7 +8,7 @@ import (
 )
 
 type GRPCOutboundConnection struct {
-	DetectorService *grpc.ClientConn
+	PredictionService *grpc.ClientConn
 }
 
 type GRPCOutboundService struct {
@@ -16,7 +16,7 @@ type GRPCOutboundService struct {
 }
 
 func New(configuration *configuration.Configuration) *GRPCOutboundService {
-	detectorServiceConnection, err := grpc.NewClient(configuration.GRPC.Service.Detector, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	detectorServiceConnection, err := grpc.NewClient(configuration.Service.SelfManagedServicePrediction.Endpoint, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		panic(err)
 	}
@@ -29,11 +29,11 @@ func New(configuration *configuration.Configuration) *GRPCOutboundService {
 }
 
 func (o *GRPCOutboundConnection) Close() error {
-	if o.DetectorService == nil {
+	if o.PredictionService == nil {
 		return nil
 	}
 
-	o.DetectorService.Close()
+	o.PredictionService.Close()
 
 	return nil
 }

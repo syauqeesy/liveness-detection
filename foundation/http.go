@@ -27,15 +27,15 @@ type httpFoundation struct {
 func (f *httpFoundation) Setup() error {
 	f.mux = http.NewServeMux()
 
+	f.logger = common.NewLogger(f.configuration.Application.Service, f.configuration.Application.Environment)
+
 	f.http = common.NewHttp(f.logger)
 
 	f.grpcOutboundService = grpc_outbound.New(f.configuration)
 
-	f.service = service.NewService(f.configuration, f.grpcOutboundService)
+	f.service = service.NewService(f.configuration, f.logger, f.grpcOutboundService)
 
 	f.handler = handler.NewHandler(f.mux, f.configuration, f.service, f.http)
-
-	f.logger = common.NewLogger(f.configuration.Application.Service, f.configuration.Application.Environment)
 
 	f.mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		f.http.ErrorHandler(w, common.CreateException(http.StatusMethodNotAllowed, http.StatusText(http.StatusMethodNotAllowed)), nil)

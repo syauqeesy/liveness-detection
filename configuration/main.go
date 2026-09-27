@@ -14,11 +14,15 @@ type Configuration struct {
 	Http struct {
 		Port string `json:"port"`
 	} `json:"http"`
-	GRPC struct {
-		Service struct {
-			Detector string `json:"detector"`
-		} `json:"service"`
-	} `json:"grpc"`
+	Service struct {
+		SelfManagedServicePrediction struct {
+			Endpoint string `json:"endpoint"`
+		} `json:"self_managed_service_prediction"`
+		ManagedServicePrediction struct {
+			Endpoint           string `json:"endpoint"`
+			AuthorizationToken string `json:"authorization_token"`
+		} `json:"managed_service_prediction"`
+	} `json:"service"`
 }
 
 func NewConfiguration(path string) (*Configuration, error) {
