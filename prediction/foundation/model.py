@@ -43,11 +43,7 @@ class AntiSpoofModel:
 
         tf.config.set_logical_device_configuration(
             gpus[0],
-            [
-                tf.config.LogicalDeviceConfiguration(
-                    memory_limit=memory_limit
-                )
-            ],
+            [tf.config.LogicalDeviceConfiguration(memory_limit=memory_limit)],
         )
 
     def execute(self, image_bytes: bytes) -> InferenceResult:

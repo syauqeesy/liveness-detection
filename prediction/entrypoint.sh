@@ -1,4 +1,5 @@
 #!/bin/sh
+
 set -e
 
 export LD_LIBRARY_PATH="$(
@@ -9,4 +10,4 @@ export LD_LIBRARY_PATH="$(
         paste -sd:
 ):${LD_LIBRARY_PATH}"
 
-exec python main.py
+exec python main.py "$@"

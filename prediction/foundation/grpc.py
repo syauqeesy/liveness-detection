@@ -2,7 +2,6 @@ from concurrent import futures
 from signal import SIGINT, SIGTERM, signal
 
 import grpc
-
 from foundation.configuration import Configuration
 from foundation.logger import Logger
 

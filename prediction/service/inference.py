@@ -1,15 +1,35 @@
+import base64
+import binascii
 import time
+from typing import Any
 
-import grpc
-
+from fastapi import APIRouter, HTTPException
 from foundation.configuration import Configuration
 from foundation.logger import Logger
 from foundation.model import AntiSpoofModel
-from pb.compiled.inference_pb2 import PredictionRequest, PredictionResponse
-from pb.compiled.inference_pb2_grpc import InferenceServiceServicer
+from pydantic import BaseModel, Field
 
 
-class InferenceService(InferenceServiceServicer):
+class PredictionInstance(BaseModel):
+    image: str = Field(min_length=1)
+
+
+class PredictionRequest(BaseModel):
+    instances: list[PredictionInstance] = Field(min_length=1)
+    parameters: dict[str, Any] | None = None
+
+
+class Prediction(BaseModel):
+    result: str
+    live: float
+    spoof: float
+
+
+class PredictionResponse(BaseModel):
+    predictions: list[Prediction]
+
+
+class InferenceService:
     def __init__(
         self,
         configuration: Configuration,
@@ -20,51 +40,100 @@ class InferenceService(InferenceServiceServicer):
         self._logger = logger
         self._model = model
 
-    def Predict(
+        self.router = APIRouter()
+
+        self._register_routes()
+
+    def _register_routes(self) -> None:
+        self.router.add_api_route(
+            "/health",
+            self.health,
+            methods=["GET"],
+        )
+
+        self.router.add_api_route(
+            "/predict",
+            self.predict,
+            methods=["POST"],
+            response_model=PredictionResponse,
+        )
+
+    def health(self) -> dict[str, str]:
+        return {
+            "status": "ok",
+        }
+
+    async def predict(
         self,
         request: PredictionRequest,
-        context: grpc.ServicerContext,
     ) -> PredictionResponse:
-        if not request.image:
-            self._logger.warn(
-                "prediction rejected",
-                "reason",
-                "empty image",
-            )
+        predictions: list[Prediction] = []
 
-            context.abort(
-                grpc.StatusCode.INVALID_ARGUMENT,
-                "Image is empty",
-            )
+        for instance in request.instances:
+            try:
+                image = base64.b64decode(
+                    instance.image,
+                    validate=True,
+                )
 
-        started = time.perf_counter()
+            except (binascii.Error, ValueError):
+                self._logger.warn(
+                    "prediction rejected",
+                    "reason",
+                    "invalid base64 image",
+                )
 
-        try:
-            result = self._model.execute(request.image)
+                raise HTTPException(
+                    status_code=400,
+                    detail="Image is not valid base64",
+                )
 
-            return PredictionResponse(
-                result=result.result,
-                live=result.live,
-                spoof=result.spoof,
-            )
+            if not image:
+                self._logger.warn(
+                    "prediction rejected",
+                    "reason",
+                    "empty image",
+                )
 
-        except Exception as error:
-            self._logger.error(
-                "prediction failed",
-                "error",
-                str(error),
-            )
+                raise HTTPException(
+                    status_code=400,
+                    detail="Image is empty",
+                )
 
-            context.abort(
-                grpc.StatusCode.INTERNAL,
-                "Prediction failed",
-            )
+            started = time.perf_counter()
 
-        finally:
-            inference_time_ms = (time.perf_counter() - started) * 1000
+            try:
+                result = self._model.execute(image)
 
-            self._logger.info(
-                "prediction completed",
-                "duration_ms",
-                round(inference_time_ms, 2),
-            )
+                predictions.append(
+                    Prediction(
+                        result=result.result,
+                        live=result.live,
+                        spoof=result.spoof,
+                    )
+                )
+
+            except Exception as error:
+                self._logger.error(
+                    "prediction failed",
+                    "error",
+                    str(error),
+                )
+
+                raise HTTPException(
+                    status_code=500,
+                    detail="Prediction failed",
+                )
+
+            finally:
+                inference_time_ms = (time.perf_counter() - started) * 1000
+
+                self._logger.info(
+                    "prediction completed",
+                    "duration_ms",
+                    round(inference_time_ms, 2),
+                )
+
+        return PredictionResponse(
+            predictions=predictions,
+        )

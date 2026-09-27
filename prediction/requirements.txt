@@ -2,3 +2,5 @@ tensorflow[and-cuda]==2.21.0
 numpy==2.2.6
 pillow==12.3.0
 grpcio==1.84.0
+fastapi==0.141.1
+uvicorn==0.54.0
