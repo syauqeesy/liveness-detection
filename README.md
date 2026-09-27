@@ -21,9 +21,9 @@ Use CUDA inside python venv:
 export LD_LIBRARY_PATH="$(find "$VIRTUAL_ENV/lib/python3.13/site-packages/nvidia" -type d -name lib -print | paste -sd:):${LD_LIBRARY_PATH}"
 ```
 
-Run main.py:
+Run main.py (http | grpc):
 ```sh
-PYTHONPATH="$PWD/pb/compiled:$PYTHONPATH" python3 main.py
+PYTHONPATH="$PWD/pb/compiled:$PYTHONPATH" python3 main.py http
 ```
 
 Run main.go:
