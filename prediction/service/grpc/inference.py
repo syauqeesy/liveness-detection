@@ -1,3 +1,5 @@
+import base64
+import binascii
 import time
 
 import grpc
@@ -24,7 +26,25 @@ class InferenceService(InferenceServiceServicer):
         request: PredictionRequest,
         context: grpc.ServicerContext,
     ) -> PredictionResponse:
-        if not request.image:
+        try:
+            image = base64.b64decode(
+                request.image,
+                validate=True,
+            )
+
+        except (binascii.Error, ValueError):
+            self._logger.warn(
+                "prediction rejected",
+                "reason",
+                "invalid base64 image",
+            )
+
+            context.abort(
+                grpc.StatusCode.INVALID_ARGUMENT,
+                "Image is not valid base64",
+            )
+
+        if not image:
             self._logger.warn(
                 "prediction rejected",
                 "reason",
@@ -39,7 +59,7 @@ class InferenceService(InferenceServiceServicer):
         started = time.perf_counter()
 
         try:
-            result = self._model.execute(request.image)
+            result = self._model.execute(image)
 
             return PredictionResponse(
                 result=result.result,
@@ -60,7 +80,9 @@ class InferenceService(InferenceServiceServicer):
             )
 
         finally:
-            inference_time_ms = (time.perf_counter() - started) * 1000
+            inference_time_ms = (
+                time.perf_counter() - started
+            ) * 1000
 
             self._logger.info(
                 "prediction completed",
