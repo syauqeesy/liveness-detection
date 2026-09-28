@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+
 from foundation.configuration import Configuration
 from foundation.logger import Logger
 from foundation.model import AntiSpoofModel

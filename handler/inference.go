@@ -2,12 +2,16 @@ package handler
 
 import (
 	"net/http"
+
+	"github.com/syauqeesy/liveness-detection/common"
 )
 
 type inferenceHandler handler
 
 func (h *inferenceHandler) Predict(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
+
+	ctx := common.ContextWithRequestId(r.Context(), w.Header().Get("X-Request-Id"))
 
 	file, header, err := r.FormFile("image")
 	if err != nil {
@@ -21,7 +25,7 @@ func (h *inferenceHandler) Predict(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := h.Service.Inference.Predict(r.Context(), mode, file, header)
+	result, err := h.Service.Inference.Predict(ctx, mode, file, header)
 	if err != nil {
 		h.CommonHttp.ErrorHandler(w, err, nil)
 		return

@@ -3,6 +3,7 @@ import binascii
 import time
 
 import grpc
+
 from foundation.configuration import Configuration
 from foundation.logger import Logger
 from foundation.model import AntiSpoofModel
@@ -35,6 +36,8 @@ class InferenceService(InferenceServiceServicer):
         except (binascii.Error, ValueError):
             self._logger.warn(
                 "prediction rejected",
+                "request_id",
+                request.request_id,
                 "reason",
                 "invalid base64 image",
             )
@@ -47,6 +50,8 @@ class InferenceService(InferenceServiceServicer):
         if not image:
             self._logger.warn(
                 "prediction rejected",
+                "request_id",
+                request.request_id,
                 "reason",
                 "empty image",
             )
@@ -70,6 +75,8 @@ class InferenceService(InferenceServiceServicer):
         except Exception as error:
             self._logger.error(
                 "prediction failed",
+                "request_id",
+                request.request_id,
                 "error",
                 str(error),
             )
@@ -80,12 +87,12 @@ class InferenceService(InferenceServiceServicer):
             )
 
         finally:
-            inference_time_ms = (
-                time.perf_counter() - started
-            ) * 1000
+            inference_time_ms = (time.perf_counter() - started) * 1000
 
             self._logger.info(
                 "prediction completed",
+                "request_id",
+                request.request_id,
                 "duration_ms",
                 round(inference_time_ms, 2),
             )

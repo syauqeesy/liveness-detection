@@ -9,7 +9,8 @@ service InferenceService {
 }
 
 message PredictionRequest {
-  string image = 1;
+  string request_id = 1;
+  string image = 2;
 }
 
 message PredictionResponse {

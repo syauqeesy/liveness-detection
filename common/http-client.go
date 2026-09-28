@@ -11,7 +11,7 @@ import (
 )
 
 type CommonHttpClient interface {
-	PostJSON(
+	PostJson(
 		ctx context.Context,
 		url string,
 		headers map[string]string,
@@ -34,7 +34,7 @@ func NewHttpClient(logger Logger) *commonHttpClient {
 	}
 }
 
-func (h *commonHttpClient) PostJSON(
+func (h *commonHttpClient) PostJson(
 	ctx context.Context,
 	url string,
 	headers map[string]string,
@@ -42,16 +42,18 @@ func (h *commonHttpClient) PostJSON(
 	response any,
 ) error {
 	started := time.Now()
+	requestId := RequestIdFromContext(ctx)
 
 	body, err := json.Marshal(payload)
 	if err != nil {
 		h.logger.Error(
-			"failed to marshal HTTP request",
+			"failed to marshal http request",
+			"request_id", requestId,
 			"error", err,
 			"url", url,
 		)
 
-		return fmt.Errorf("marshal HTTP request: %w", err)
+		return fmt.Errorf("marshal http request: %w", err)
 	}
 
 	request, err := http.NewRequestWithContext(
@@ -62,22 +64,27 @@ func (h *commonHttpClient) PostJSON(
 	)
 	if err != nil {
 		h.logger.Error(
-			"failed to create HTTP request",
+			"failed to create http request",
+			"request_id", requestId,
 			"error", err,
 			"url", url,
 		)
 
-		return fmt.Errorf("create HTTP request: %w", err)
+		return fmt.Errorf("create http request: %w", err)
 	}
 
-	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set(
+		"Content-Type",
+		"application/json",
+	)
 
 	for key, value := range headers {
 		request.Header.Set(key, value)
 	}
 
 	h.logger.Debug(
-		"HTTP request started",
+		"http request started",
+		"request_id", requestId,
 		"method", request.Method,
 		"url", url,
 	)
@@ -85,14 +92,19 @@ func (h *commonHttpClient) PostJSON(
 	result, err := h.client.Do(request)
 	if err != nil {
 		h.logger.Error(
-			"HTTP request failed",
+			"http request failed",
+			"request_id", requestId,
 			"error", err,
 			"method", request.Method,
 			"url", url,
-			"duration_ms", time.Since(started).Seconds()*1000,
+			"duration_ms",
+			time.Since(started).Seconds()*1000,
 		)
 
-		return fmt.Errorf("execute HTTP request: %w", err)
+		return fmt.Errorf(
+			"execute http request: %w",
+			err,
+		)
 	}
 
 	defer result.Body.Close()
@@ -103,7 +115,8 @@ func (h *commonHttpClient) PostJSON(
 		responseBody, _ := io.ReadAll(result.Body)
 
 		h.logger.Warn(
-			"HTTP request rejected",
+			"http request rejected",
+			"request_id", requestId,
 			"method", request.Method,
 			"url", url,
 			"status", result.Status,
@@ -111,7 +124,7 @@ func (h *commonHttpClient) PostJSON(
 		)
 
 		return fmt.Errorf(
-			"HTTP request failed: status=%s body=%s",
+			"http request failed: status=%s body=%s",
 			result.Status,
 			string(responseBody),
 		)
@@ -120,7 +133,8 @@ func (h *commonHttpClient) PostJSON(
 	if response != nil {
 		if err := json.NewDecoder(result.Body).Decode(response); err != nil {
 			h.logger.Error(
-				"failed to decode HTTP response",
+				"failed to decode http response",
+				"request_id", requestId,
 				"error", err,
 				"method", request.Method,
 				"url", url,
@@ -128,12 +142,16 @@ func (h *commonHttpClient) PostJSON(
 				"duration_ms", durationMs,
 			)
 
-			return fmt.Errorf("decode HTTP response: %w", err)
+			return fmt.Errorf(
+				"decode http response: %w",
+				err,
+			)
 		}
 	}
 
 	h.logger.Info(
-		"HTTP request completed",
+		"http request completed",
+		"request_id", requestId,
 		"method", request.Method,
 		"url", url,
 		"status", result.Status,

@@ -4,13 +4,15 @@ import time
 from typing import Any
 
 from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel, Field
+
 from foundation.configuration import Configuration
 from foundation.logger import Logger
 from foundation.model import AntiSpoofModel
-from pydantic import BaseModel, Field
 
 
 class PredictionInstance(BaseModel):
+    request_id: str = Field(min_length=1)
     image: str = Field(min_length=1)
 
 
@@ -79,6 +81,8 @@ class InferenceService:
             except (binascii.Error, ValueError):
                 self._logger.warn(
                     "prediction rejected",
+                    "request_id",
+                    instance.request_id,
                     "reason",
                     "invalid base64 image",
                 )
@@ -91,6 +95,8 @@ class InferenceService:
             if not image:
                 self._logger.warn(
                     "prediction rejected",
+                    "request_id",
+                    instance.request_id,
                     "reason",
                     "empty image",
                 )
@@ -116,6 +122,8 @@ class InferenceService:
             except Exception as error:
                 self._logger.error(
                     "prediction failed",
+                    "request_id",
+                    instance.request_id,
                     "error",
                     str(error),
                 )
@@ -130,6 +138,8 @@ class InferenceService:
 
                 self._logger.info(
                     "prediction completed",
+                    "request_id",
+                    instance.request_id,
                     "duration_ms",
                     round(inference_time_ms, 2),
                 )

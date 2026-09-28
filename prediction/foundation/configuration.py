@@ -82,9 +82,7 @@ def new_configuration(path: Path) -> Configuration:
     try:
         memory_limit = int(memory_limit)
     except (TypeError, ValueError) as exc:
-        raise ValueError(
-            "APPLICATION_MEMORY_LIMIT must be an integer"
-        ) from exc
+        raise ValueError("APPLICATION_MEMORY_LIMIT must be an integer") from exc
 
     return Configuration(
         application=ApplicationConfiguration(

@@ -31,7 +31,8 @@ func (s *inferenceService) Predict(ctx context.Context, mode string, file multip
 	switch mode {
 	case "self_managed_service":
 		result, err := s.GRPCOutbound.Inference.Predict(ctx, &inference.PredictionRequest{
-			Image: imageInBase64,
+			RequestId: common.RequestIdFromContext(ctx),
+			Image:     imageInBase64,
 		})
 		if err != nil {
 			return nil, err
@@ -42,7 +43,6 @@ func (s *inferenceService) Predict(ctx context.Context, mode string, file multip
 		response.Spoof = result.GetSpoof()
 	case "managed_service":
 		managedInference := outbound_http.NewManagedInference(s.Configuration, common.NewHttpClient(s.Logger), s.Logger)
-
 		result, err := managedInference.Predict(ctx, imageInBase64)
 		if err != nil {
 			return nil, err

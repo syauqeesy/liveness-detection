@@ -35,7 +35,8 @@ type managedPredictionRequest struct {
 }
 
 type managedPredictionInstance struct {
-	Image string `json:"image"`
+	RequestId string `json:"request_id"`
+	Image     string `json:"image"`
 }
 
 type managedPredictionResponse struct {
@@ -52,21 +53,24 @@ func (m *managedInference) Predict(
 	ctx context.Context,
 	image string,
 ) (Prediction, error) {
+	requestId := common.RequestIdFromContext(ctx)
 	request := managedPredictionRequest{
 		Instances: []managedPredictionInstance{
 			{
-				Image: image,
+				RequestId: requestId,
+				Image:     image,
 			},
 		},
 	}
 
 	response := managedPredictionResponse{}
 
-	err := m.httpClient.PostJSON(
+	err := m.httpClient.PostJson(
 		ctx,
 		m.configuration.Service.ManagedServicePrediction.Endpoint,
 		map[string]string{
 			"Authorization": "Bearer " + m.configuration.Service.ManagedServicePrediction.AuthorizationToken,
+			"X-Request-Id":  requestId,
 		},
 		request,
 		&response,
@@ -74,6 +78,7 @@ func (m *managedInference) Predict(
 	if err != nil {
 		m.logger.Error(
 			"managed inference request failed",
+			"request_id", requestId,
 			"error", err,
 		)
 
@@ -91,6 +96,7 @@ func (m *managedInference) Predict(
 
 		m.logger.Error(
 			"managed inference returned invalid response",
+			"request_id", requestId,
 			"error", err,
 		)
 

@@ -1,5 +1,6 @@
 import uvicorn
 from fastapi import FastAPI as FastAPIApplication
+
 from foundation.configuration import Configuration
 
 
