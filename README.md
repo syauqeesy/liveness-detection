@@ -10,7 +10,7 @@ sudo apt install protobuf-compiler
 Compile protobuf:
 ```sh
 # Prediction service
-python3 -m grpc_tools.protoc -I pb --python_out=prediction/pb/compiled --pyi_out=prediction/protobuf/compiled --grpc_python_out=prediction/pb/compiled pb/inference.proto
+python3 -m grpc_tools.protoc -I pb --python_out=prediction/pb/compiled --pyi_out=prediction/pb/compiled --grpc_python_out=prediction/pb/compiled pb/inference.proto
 
 # Backend service
 protoc --proto_path=. --go_out=pb/compiled --go-grpc_out=pb/compiled pb/*.proto
