@@ -17,12 +17,27 @@ type logger struct {
 }
 
 func NewLogger(service string, environment string) *logger {
+	handler := slog.NewJSONHandler(
+		os.Stdout,
+		&slog.HandlerOptions{
+			Level: slog.LevelInfo,
+			ReplaceAttr: func(
+				groups []string,
+				attr slog.Attr,
+			) slog.Attr {
+				if attr.Key == slog.TimeKey {
+					return slog.String(
+						slog.TimeKey,
+						attr.Value.Time().UTC().Format("2006-01-02T15:04:05.999999999+00:00"),
+					)
+				}
+				return attr
+			},
+		},
+	)
+
 	return &logger{
-		logger: slog.New(
-			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-				Level: slog.LevelInfo,
-			}),
-		).With("service", service, "environment", environment),
+		logger: slog.New(handler).With("service", service, "environment", environment),
 	}
 }
 
