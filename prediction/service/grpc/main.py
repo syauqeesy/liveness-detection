@@ -1,11 +1,9 @@
 import grpc
 
-from foundation.model import AntiSpoofModel
 from foundation.configuration import Configuration
 from foundation.logger import Logger
-from pb.compiled.inference_pb2_grpc import (
-    add_InferenceServiceServicer_to_server,
-)
+from foundation.model import AntiSpoofModel
+from pb.compiled.inference_pb2_grpc import add_InferenceServiceServicer_to_server
 from service.grpc.inference import InferenceService
 from service.prediction import PredictionService
 

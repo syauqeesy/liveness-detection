@@ -3,11 +3,7 @@ from typing import Any
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
-from service.prediction import (
-    InvalidImageError,
-    PredictionError,
-    PredictionService,
-)
+from service.prediction import InvalidImageError, PredictionError, PredictionService
 
 
 class PredictionInstance(BaseModel):

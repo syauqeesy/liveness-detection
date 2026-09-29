@@ -79,9 +79,7 @@ class PredictionService:
             ) from error
 
         finally:
-            inference_time_ms = (
-                time.perf_counter() - started
-            ) * 1000
+            inference_time_ms = (time.perf_counter() - started) * 1000
 
             self._logger.info(
                 "prediction completed",
