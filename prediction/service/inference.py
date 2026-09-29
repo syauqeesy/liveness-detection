@@ -1,14 +1,13 @@
-import base64
-import binascii
-import time
 from typing import Any
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
-from foundation.configuration import Configuration
-from foundation.logger import Logger
-from foundation.model import AntiSpoofModel
+from service.prediction import (
+    InvalidImageError,
+    PredictionError,
+    PredictionService,
+)
 
 
 class PredictionInstance(BaseModel):
@@ -34,13 +33,9 @@ class PredictionResponse(BaseModel):
 class InferenceService:
     def __init__(
         self,
-        configuration: Configuration,
-        logger: Logger,
-        model: AntiSpoofModel,
+        prediction_service: PredictionService,
     ):
-        self._configuration = configuration
-        self._logger = logger
-        self._model = model
+        self._prediction_service = prediction_service
 
         self.router = APIRouter()
 
@@ -73,76 +68,30 @@ class InferenceService:
 
         for instance in request.instances:
             try:
-                image = base64.b64decode(
-                    instance.image,
-                    validate=True,
+                result = self._prediction_service.predict(
+                    request_id=instance.request_id,
+                    image_base64=instance.image,
                 )
 
-            except (binascii.Error, ValueError):
-                self._logger.warn(
-                    "prediction rejected",
-                    "request_id",
-                    instance.request_id,
-                    "reason",
-                    "invalid base64 image",
-                )
-
+            except InvalidImageError as error:
                 raise HTTPException(
                     status_code=400,
-                    detail="Image is not valid base64",
-                )
+                    detail=str(error),
+                ) from error
 
-            if not image:
-                self._logger.warn(
-                    "prediction rejected",
-                    "request_id",
-                    instance.request_id,
-                    "reason",
-                    "empty image",
-                )
-
-                raise HTTPException(
-                    status_code=400,
-                    detail="Image is empty",
-                )
-
-            started = time.perf_counter()
-
-            try:
-                result = self._model.execute(image)
-
-                predictions.append(
-                    Prediction(
-                        result=result.result,
-                        live=result.live,
-                        spoof=result.spoof,
-                    )
-                )
-
-            except Exception as error:
-                self._logger.error(
-                    "prediction failed",
-                    "request_id",
-                    instance.request_id,
-                    "error",
-                    str(error),
-                )
-
+            except PredictionError as error:
                 raise HTTPException(
                     status_code=500,
-                    detail="Prediction failed",
-                )
+                    detail=str(error),
+                ) from error
 
-            finally:
-                inference_time_ms = (time.perf_counter() - started) * 1000
-
-                self._logger.info(
-                    "prediction completed",
-                    "request_id",
-                    instance.request_id,
-                    "duration_ms",
-                    round(inference_time_ms, 2),
+            predictions.append(
+                Prediction(
+                    result=result.result,
+                    live=result.live,
+                    spoof=result.spoof,
                 )
+            )
 
         return PredictionResponse(
             predictions=predictions,

@@ -1,21 +1,26 @@
 from fastapi import FastAPI
 
+from foundation.model import AntiSpoofModel
 from foundation.configuration import Configuration
 from foundation.logger import Logger
-from foundation.model import AntiSpoofModel
 from service.inference import InferenceService
+from service.prediction import PredictionService
 
 
 def new_service(
     application: FastAPI,
-    configuration: Configuration,
     logger: Logger,
     model: AntiSpoofModel,
 ):
-    inference_service = InferenceService(
-        configuration,
+    prediction_service = PredictionService(
         logger,
         model,
     )
 
-    application.include_router(inference_service.router)
+    inference_service = InferenceService(
+        prediction_service,
+    )
+
+    application.include_router(
+        inference_service.router,
+    )

@@ -42,7 +42,6 @@ def main():
 
         new_grpc_service(
             grpc.server,
-            configuration,
             logger,
             model,
         )
@@ -55,7 +54,6 @@ def main():
 
         new_http_service(
             fastapi.app,
-            configuration,
             logger,
             model,
         )
