@@ -21,7 +21,7 @@ func Logger(logger common.Logger) func(http.Handler) http.Handler {
 			w.Header().Set("X-Request-Id", id)
 
 			logger.Info(
-				"http request started",
+				"request started",
 				"request_id", id,
 				"method", r.Method,
 				"path", r.URL.Path,
@@ -30,7 +30,7 @@ func Logger(logger common.Logger) func(http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 
 			logger.Info(
-				"http request completed",
+				"request completed",
 				"request_id", id,
 				"method", r.Method,
 				"path", r.URL.Path,
