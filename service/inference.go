@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"io"
 	"mime/multipart"
+	"time"
 
 	"github.com/syauqeesy/liveness-detection/common"
 	outbound_http "github.com/syauqeesy/liveness-detection/outbound/http"
@@ -28,12 +29,26 @@ func (s *inferenceService) Predict(ctx context.Context, mode string, file multip
 
 	imageInBase64 := base64.StdEncoding.EncodeToString(imageInBytes)
 
+	requestId := common.RequestIdFromContext(ctx)
+
 	switch mode {
 	case "self_managed_service":
+		started := time.Now()
+
 		result, err := s.GRPCOutbound.Inference.Predict(ctx, &inference.PredictionRequest{
-			RequestId: common.RequestIdFromContext(ctx),
+			RequestId: requestId,
 			Image:     imageInBase64,
 		})
+
+		duration := time.Since(started)
+		s.Logger.Info(
+			"grpc request completed",
+			"request_id",
+			requestId,
+			"duration_ms",
+			duration.Seconds()*1000,
+		)
+
 		if err != nil {
 			return nil, err
 		}
@@ -42,8 +57,8 @@ func (s *inferenceService) Predict(ctx context.Context, mode string, file multip
 		response.Live = result.GetLive()
 		response.Spoof = result.GetSpoof()
 	case "managed_service":
-		managedInference := outbound_http.NewManagedInference(s.Configuration, common.NewHttpClient(s.Logger), s.Logger)
-		result, err := managedInference.Predict(ctx, imageInBase64)
+		inference := outbound_http.NewInference(s.Configuration, common.NewHttpClient(s.Logger), s.Logger)
+		result, err := inference.Predict(ctx, imageInBase64)
 		if err != nil {
 			return nil, err
 		}
