@@ -13,28 +13,18 @@
 >
   <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
     <div class="flex items-center justify-between mb-6">
-      <h2 class="text-2xl font-bold">Liveness Result</h2>
-
-      <button
-        type="button"
-        on:click={onClose}
-        class="text-2xl font-bold cursor-pointer"
-      >
-        x
-      </button>
+      <h2 class="text-2xl font-bold">Result</h2>
     </div>
 
-    <div class="flex flex-col gap-4">
+    <div class="flex flex-col gap-12">
       <div class="text-center">
-        <p class="text-sm text-gray-500">Result</p>
-
         <p class="text-4xl font-bold">
           {result.result}
         </p>
       </div>
 
       <div class="grid grid-cols-2 gap-4">
-        <div class="rounded-xl border p-4 text-center">
+        <div class="rounded-xl border-3 p-4 text-center">
           <p class="text-sm text-gray-500">Live</p>
 
           <p class="text-2xl font-semibold">
@@ -42,7 +32,7 @@
           </p>
         </div>
 
-        <div class="rounded-xl border p-4 text-center">
+        <div class="rounded-xl border-3 p-4 text-center">
           <p class="text-sm text-gray-500">Spoof</p>
 
           <p class="text-2xl font-semibold">

@@ -1,4 +1,5 @@
 import { BACKEND_URL } from "../config";
+import { v7 as uuidv7 } from "uuid";
 
 import type { InferenceAdapter, InferenceResult } from "./main";
 
@@ -23,13 +24,13 @@ export default class CloudInference implements InferenceAdapter {
 
     body.append("image", imageBlob, "liveness.jpg");
 
-    const response = await fetch(
-      `${BACKEND_URL}/inference`,
-      {
-        method: "POST",
-        body,
+    const response = await fetch(`${BACKEND_URL}/inference`, {
+      method: "POST",
+      headers: {
+        "X-Request-Id": uuidv7(),
       },
-    );
+      body,
+    });
 
     const result: Response<InferenceData> = await response.json();
 

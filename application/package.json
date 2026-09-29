@@ -21,6 +21,7 @@
   "dependencies": {
     "@litertjs/core": "^2.5.3",
     "@tailwindcss/vite": "^4.3.3",
-    "tailwindcss": "^4.3.3"
+    "tailwindcss": "^4.3.3",
+    "uuid": "^14.0.2"
   }
 }

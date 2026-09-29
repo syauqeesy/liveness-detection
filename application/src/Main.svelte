@@ -8,6 +8,7 @@
   import SelfManagedService from "./service/self-managed-service";
   import OnDeviceService from "./service/on-device-service";
   import ResultModal from "./ResultModal.svelte";
+  import Loading from "./Loading.svelte";
 
   let IsLoading = true;
   let VideoElement: HTMLVideoElement;
@@ -21,6 +22,8 @@
   const onDeviceService = new OnDeviceService();
 
   async function startCamera() {
+    IsLoading = true;
+
     try {
       Stream = await navigator.mediaDevices.getUserMedia({
         video: {
@@ -32,17 +35,50 @@
 
       VideoElement.srcObject = Stream;
 
-      VideoElement.onloadedmetadata = onLoadMetadata;
+      await new Promise<void>((resolve, reject) => {
+        const onReady = async () => {
+          try {
+            await VideoElement.play();
+
+            if (
+              VideoElement.videoWidth === 0 ||
+              VideoElement.videoHeight === 0
+            ) {
+              reject(new Error("Camera video dimensions are not available"));
+              return;
+            }
+
+            StreamHeight = VideoElement.getBoundingClientRect().height;
+
+            resolve();
+          } catch (error) {
+            reject(error);
+          }
+        };
+
+        const onError = () => {
+          reject(new Error("Failed to start camera video"));
+        };
+
+        VideoElement.addEventListener("loadedmetadata", onReady, {
+          once: true,
+        });
+
+        VideoElement.addEventListener("error", onError, {
+          once: true,
+        });
+      });
+
+      IsLoading = false;
     } catch (error: unknown) {
       if (error instanceof Error) {
         console.error(error.message);
+      } else {
+        console.error("Failed to start camera");
       }
-    }
-  }
 
-  function onLoadMetadata() {
-    StreamHeight = VideoElement.getBoundingClientRect().height;
-    IsLoading = false;
+      IsLoading = false;
+    }
   }
 
   async function takeCroppedPicture(): Promise<Blob> {
@@ -106,6 +142,8 @@
   async function execute(
     mode: "managed_service" | "self_managed_service" | "on_device_service",
   ) {
+    IsLoading = true;
+
     try {
       const imageBlob = await takeCroppedPicture();
 
@@ -127,6 +165,8 @@
       inferenceFinished = true;
     } catch (error) {
       console.error("Liveness check failed:", error);
+    } finally {
+      IsLoading = false;
     }
   }
 
@@ -136,15 +176,22 @@
   }
 
   onMount(async () => {
-    await onDeviceService.Initialize();
+    IsLoading = true;
 
-    startCamera();
+    try {
+      await onDeviceService.Initialize();
+      await startCamera();
+    } catch (error) {
+      console.error("Initialization failed:", error);
+      IsLoading = false;
+    }
   });
 </script>
 
 {#if IsLoading}
-  <div>Loading</div>
+  <Loading></Loading>
 {/if}
+
 <main class="flex flex-col gap-10 xl:p-10 md:p-5 p-2">
   <section id="camera-preview-container" class="flex flex-col items-center">
     <div
