@@ -8,38 +8,38 @@ import (
 	"github.com/syauqeesy/liveness-detection/configuration"
 )
 
-type ManagedInference interface {
+type Inference interface {
 	Predict(ctx context.Context, image string) (Prediction, error)
 }
 
-type managedInference struct {
+type inference struct {
 	configuration *configuration.Configuration
 	httpClient    common.CommonHttpClient
 	logger        common.Logger
 }
 
-func NewManagedInference(
+func NewInference(
 	configuration *configuration.Configuration,
 	httpClient common.CommonHttpClient,
 	logger common.Logger,
-) ManagedInference {
-	return &managedInference{
+) Inference {
+	return &inference{
 		configuration: configuration,
 		httpClient:    httpClient,
 		logger:        logger,
 	}
 }
 
-type managedPredictionRequest struct {
-	Instances []managedPredictionInstance `json:"instances"`
+type predictionRequest struct {
+	Instances []predictionInstance `json:"instances"`
 }
 
-type managedPredictionInstance struct {
+type predictionInstance struct {
 	RequestId string `json:"request_id"`
 	Image     string `json:"image"`
 }
 
-type managedPredictionResponse struct {
+type predictionResponse struct {
 	Predictions []Prediction `json:"predictions"`
 }
 
@@ -49,13 +49,13 @@ type Prediction struct {
 	Spoof  float32 `json:"spoof"`
 }
 
-func (m *managedInference) Predict(
+func (m *inference) Predict(
 	ctx context.Context,
 	image string,
 ) (Prediction, error) {
 	requestId := common.RequestIdFromContext(ctx)
-	request := managedPredictionRequest{
-		Instances: []managedPredictionInstance{
+	request := predictionRequest{
+		Instances: []predictionInstance{
 			{
 				RequestId: requestId,
 				Image:     image,
@@ -63,7 +63,7 @@ func (m *managedInference) Predict(
 		},
 	}
 
-	response := managedPredictionResponse{}
+	response := predictionResponse{}
 
 	err := m.httpClient.PostJson(
 		ctx,
