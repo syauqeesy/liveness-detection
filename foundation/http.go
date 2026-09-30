@@ -41,7 +41,7 @@ func (f *httpFoundation) Setup() error {
 		f.http.ErrorHandler(w, common.CreateException(http.StatusMethodNotAllowed, http.StatusText(http.StatusMethodNotAllowed)), nil)
 	})
 
-	port := os.Getenv("PORT")
+	port := os.Getenv("HTTP_PORT")
 	if port == "" {
 		port = f.configuration.Http.Port
 	}
