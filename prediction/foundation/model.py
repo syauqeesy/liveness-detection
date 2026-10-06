@@ -15,7 +15,7 @@ class InferenceResult:
 
 
 class AntiSpoofModel:
-    def __init__(self, model_path: Path, memory_limit: int):
+    def __init__(self, model_path: Path):
         self.model = tf.saved_model.load(str(model_path))
 
         if "serving_default" not in self.model.signatures:
@@ -55,5 +55,5 @@ class AntiSpoofModel:
         )
 
 
-def new_model(model_path: Path, memory_limit: int) -> AntiSpoofModel:
-    return AntiSpoofModel(model_path, memory_limit)
+def new_model(model_path: Path) -> AntiSpoofModel:
+    return AntiSpoofModel(model_path)

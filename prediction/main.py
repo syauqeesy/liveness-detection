@@ -13,7 +13,6 @@ configuration = new_configuration(Path("./config.json"))
 
 model = new_model(
     Path("./anti-spoof-mn3"),
-    configuration.application.memory_limit,
 )
 
 logger = new_logger(
