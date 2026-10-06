@@ -1,0 +1,20 @@
+services:
+  self-managed-prediction-service-liveness:
+    image: asia-southeast1-docker.pkg.dev/punya-syauqi/liveness-detection/prediction-liveness:1.0.0
+    container_name: self-managed-prediction-service-liveness
+    command: ["grpc"]
+    environment:
+      APPLICATION_SERVICE: self-managed-prediction-service-liveness
+      APPLICATION_ENVIRONMENT: production
+      GRPC_PORT: ":50051"
+      HTTP_PORT: 80
+    ports:
+      - "50051:50051"
+    labels:
+      app.service: self-managed-prediction-service-liveness
+      app.environment: production
+    restart: unless-stopped
+    logging:
+      driver: gcplogs
+      options:
+        labels: "app.service,app.environment"
