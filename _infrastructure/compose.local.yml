@@ -31,7 +31,6 @@ services:
     environment:
       APPLICATION_SERVICE: self-managed-prediction-service-liveness
       APPLICATION_ENVIRONMENT: development
-      APPLICATION_MEMORY_LIMIT: 512
       GRPC_PORT: ":50051"
       HTTP_PORT: "80"
     deploy:
@@ -49,7 +48,6 @@ services:
     environment:
       APPLICATION_SERVICE: managed-prediction-service-liveness
       APPLICATION_ENVIRONMENT: development
-      APPLICATION_MEMORY_LIMIT: 512
       GRPC_PORT: ":50051"
       HTTP_PORT: "80"
     deploy:

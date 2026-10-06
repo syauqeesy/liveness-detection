@@ -8,7 +8,6 @@ from pathlib import Path
 class ApplicationConfiguration:
     service: str
     environment: str
-    memory_limit: int
 
 
 @dataclass
@@ -49,11 +48,6 @@ def new_configuration(path: Path) -> Configuration:
         application_data.get("environment"),
     )
 
-    memory_limit = os.getenv(
-        "APPLICATION_MEMORY_LIMIT",
-        application_data.get("memory_limit"),
-    )
-
     grpc_port = os.getenv(
         "GRPC_PORT",
         grpc_data.get("port"),
@@ -70,25 +64,16 @@ def new_configuration(path: Path) -> Configuration:
     if environment is None:
         raise ValueError("APPLICATION_ENVIRONMENT is not configured")
 
-    if memory_limit is None:
-        raise ValueError("APPLICATION_MEMORY_LIMIT is not configured")
-
     if grpc_port is None:
         raise ValueError("GRPC_PORT is not configured")
 
     if http_port is None:
         raise ValueError("HTTP_PORT is not configured")
 
-    try:
-        memory_limit = int(memory_limit)
-    except (TypeError, ValueError) as exc:
-        raise ValueError("APPLICATION_MEMORY_LIMIT must be an integer") from exc
-
     return Configuration(
         application=ApplicationConfiguration(
             service=service,
             environment=environment,
-            memory_limit=memory_limit,
         ),
         grpc=GRPCConfiguration(
             port=grpc_port,
