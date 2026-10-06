@@ -9,13 +9,14 @@
   import OnDeviceService from "./service/on-device-service";
   import ResultModal from "./ResultModal.svelte";
   import Loading from "./Loading.svelte";
+  import ErrorModal from "./ErrorModal.svelte";
 
   let IsLoading = true;
   let VideoElement: HTMLVideoElement;
   let Stream: MediaStream | null = null;
   let StreamHeight = 0;
-  let inferenceFinished = false;
   let inferenceResult: InferenceResult | null = null;
+  let errorMessage: string | null = null
 
   const managedService = new ManagedService();
   const selfManagedService = new SelfManagedService();
@@ -162,17 +163,21 @@
       }
 
       inferenceResult = await InferenceService.Predict(imageBlob);
-      inferenceFinished = true;
-    } catch (error) {
-      console.error("Liveness check failed:", error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error("Liveness check failed:", error);
+        errorMessage = error.message 
+      } else {
+        console.log("Unhandled error", error)
+      }
     } finally {
       IsLoading = false;
     }
   }
 
   function onCloseModal() {
-    inferenceFinished = false;
     inferenceResult = null;
+    errorMessage = null
   }
 
   onMount(async () => {
@@ -235,6 +240,10 @@
   </section>
 </main>
 
-{#if inferenceFinished && inferenceResult}
+{#if inferenceResult}
   <ResultModal result={inferenceResult} onClose={onCloseModal}></ResultModal>
+{/if}
+
+{#if errorMessage}
+  <ErrorModal errorMessage={errorMessage} onClose={onCloseModal}></ErrorModal>
 {/if}
