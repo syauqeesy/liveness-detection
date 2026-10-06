@@ -33,14 +33,14 @@ go run main.go http
 
 Container setup:
 ```sh
-docker build -t liveness:v1.0.0 ./application/.
-docker run -d --rm --name liveness -p 5173:80 liveness:v1.0.0
+docker build -t liveness:1.0.0 ./application/.
+docker run -d --rm --name liveness -p 5173:80 liveness:1.0.0
 
-docker build -t api-liveness:v1.0.0 .
-docker run -d --rm --name api-liveness --add-host=host.docker.internal:host-gateway -p 3301:80 -v"$(pwd)/config.json:/app/config.json:ro" api-liveness:v1.0.0
+docker build -t api-liveness:1.0.0 .
+docker run -d --rm --name api-liveness --add-host=host.docker.internal:host-gateway -p 3301:80 -v"$(pwd)/config.json:/app/config.json:ro" api-liveness:1.0.0
 
-docker build -t prediction-liveness:v1.0.0 ./prediction/.
-docker run -d --gpus all --rm --name prediction-liveness -p 3302:80 -v"$(pwd)/config.json:/app/config.json:ro" prediction-liveness:v1.0.0 http
+docker build -f ./prediction/Dockerfile.nvidia -t prediction-liveness:1.0.0 ./prediction/.
+docker run -d --gpus all --rm --name prediction-liveness -p 3302:80 -v"$(pwd)/config.json:/app/config.json:ro" prediction-liveness:v.0.0 http
 
 docker compose -f ./_infrastructure/compose.local.yml up -d
 ```
