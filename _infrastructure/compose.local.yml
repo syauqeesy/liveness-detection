@@ -1,6 +1,6 @@
 services:
   liveness:
-    image: liveness:v1.0.0
+    image: liveness:1.0.0
     container_name: liveness
     ports:
       - "5173:80"
@@ -8,7 +8,7 @@ services:
       - api-liveness
 
   api-liveness:
-    image: api-liveness:v1.0.0
+    image: api-liveness:1.0.0
     container_name: api-liveness
     ports:
       - "3301:80"
@@ -25,7 +25,7 @@ services:
       - managed-prediction-service-liveness
 
   self-managed-prediction-service-liveness:
-    image: prediction-liveness:v1.0.0
+    image: prediction-liveness:1.0.0
     container_name: self-managed-prediction-service-liveness
     command: ["grpc"]
     environment:
@@ -42,7 +42,7 @@ services:
               capabilities: [gpu]
 
   managed-prediction-service-liveness:
-    image: prediction-liveness:v1.0.0
+    image: prediction-liveness:1.0.0
     container_name: managed-prediction-service-liveness
     command: ["http"]
     environment:
