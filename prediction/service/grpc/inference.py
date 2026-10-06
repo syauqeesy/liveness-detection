@@ -2,7 +2,8 @@ import grpc
 
 from pb.compiled.inference_pb2 import PredictionRequest, PredictionResponse
 from pb.compiled.inference_pb2_grpc import InferenceServiceServicer
-from service.prediction import InvalidImageError, PredictionError, PredictionService
+from service.prediction import (InvalidImageError, PredictionError,
+                                PredictionService)
 
 
 class InferenceService(InferenceServiceServicer):
