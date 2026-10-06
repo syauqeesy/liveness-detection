@@ -7,7 +7,7 @@ import {
 import { appendFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 
-const BASE_URL = 'http://localhost:5173';
+const BASE_URL = 'https://liveness.ahmadsyauqi.net';
 
 const ITERATION = 5;
 
