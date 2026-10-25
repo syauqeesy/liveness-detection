@@ -9,7 +9,7 @@ import (
 )
 
 type Inference interface {
-	Predict(ctx context.Context, image string) (Prediction, error)
+	Predict(ctx context.Context, image string) (*Prediction, error)
 }
 
 type inference struct {
@@ -49,10 +49,7 @@ type Prediction struct {
 	Spoof  float32 `json:"spoof"`
 }
 
-func (m *inference) Predict(
-	ctx context.Context,
-	image string,
-) (Prediction, error) {
+func (m *inference) Predict(ctx context.Context, image string) (*Prediction, error) {
 	requestId := common.RequestIdFromContext(ctx)
 	request := predictionRequest{
 		Instances: []predictionInstance{
@@ -82,7 +79,7 @@ func (m *inference) Predict(
 			"error", err,
 		)
 
-		return Prediction{}, fmt.Errorf(
+		return nil, fmt.Errorf(
 			"managed inference request failed: %w",
 			err,
 		)
@@ -100,8 +97,8 @@ func (m *inference) Predict(
 			"error", err,
 		)
 
-		return Prediction{}, err
+		return nil, err
 	}
 
-	return response.Predictions[0], nil
+	return &response.Predictions[0], nil
 }
