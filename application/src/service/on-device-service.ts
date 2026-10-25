@@ -24,7 +24,7 @@ export default class OnDeviceService implements InferenceServiceAdapter {
     console.log("Liveness model loaded");
   }
 
-  async Predict(imageBlob: Blob): Promise<InferenceResult> {
+  async Predict(imageBlob: Blob, _requestId: string): Promise<InferenceResult> {
     if (!this.model) {
       throw new Error("Model is not initialized")
     }

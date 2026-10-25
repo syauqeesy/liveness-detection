@@ -10,6 +10,7 @@
   import ResultModal from "./ResultModal.svelte";
   import Loading from "./Loading.svelte";
   import ErrorModal from "./ErrorModal.svelte";
+  import { v7 as uuidv7 } from "uuid";
 
   let IsLoading = true;
   let VideoElement: HTMLVideoElement;
@@ -140,13 +141,27 @@
     return blob;
   }
 
+  function saveCroppedPicture(imageBlob: Blob, requestId: string) {
+    const imageUrl = URL.createObjectURL(imageBlob);
+    const downloadLink = document.createElement("a");
+
+    downloadLink.href = imageUrl;
+    downloadLink.download = `${requestId}.jpg`;
+    downloadLink.click();
+
+    setTimeout(() => URL.revokeObjectURL(imageUrl), 0);
+  }
+
   async function execute(
     mode: "managed_service" | "self_managed_service" | "on_device_service",
   ) {
     IsLoading = true;
 
     try {
+      const requestId = uuidv7();
       const imageBlob = await takeCroppedPicture();
+
+      saveCroppedPicture(imageBlob, requestId);
 
       let InferenceService: InferenceServiceAdapter;
 
@@ -162,7 +177,7 @@
           break;
       }
 
-      inferenceResult = await InferenceService.Predict(imageBlob);
+      inferenceResult = await InferenceService.Predict(imageBlob, requestId);
     } catch (error: unknown) {
       if (error instanceof Error) {
         console.error("Liveness check failed:", error);

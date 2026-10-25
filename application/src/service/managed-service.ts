@@ -18,7 +18,7 @@ export default class ManagedService implements InferenceServiceAdapter {
     // No local model to initialize.
   }
 
-  async Predict(imageBlob: Blob): Promise<InferenceResult> {
+  async Predict(imageBlob: Blob, requestId: string): Promise<InferenceResult> {
     const body = new FormData();
 
     body.append("mode", "managed_service")
@@ -28,6 +28,9 @@ export default class ManagedService implements InferenceServiceAdapter {
       `${BACKEND_URL}/inference/predict`,
       {
         method: "POST",
+        headers: {
+          "X-Request-Id": requestId,
+        },
         body,
       },
     );

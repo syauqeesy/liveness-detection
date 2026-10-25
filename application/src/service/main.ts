@@ -6,6 +6,6 @@ export type InferenceResult = {
 
 export interface InferenceServiceAdapter {
   Initialize(): Promise<void>;
-  Predict(imageBlob: Blob): Promise<InferenceResult>;
+  Predict(imageBlob: Blob, requestId: string): Promise<InferenceResult>;
 }
 
