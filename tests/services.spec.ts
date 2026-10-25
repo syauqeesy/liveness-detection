@@ -128,7 +128,13 @@ async function saveResult(result: {
   await appendFile(RESULT_FILE, `${JSON.stringify(result)}\n`, 'utf-8');
 }
 
-async function testLiveness(page: Page, context: BrowserContext, service: string, buttonName: string) {
+async function testLiveness(
+  page: Page,
+  context: BrowserContext,
+  service: string,
+  buttonName: string,
+  testName: string,
+) {
   try {
     await grantCameraPermission(context);
 
@@ -142,12 +148,23 @@ async function testLiveness(page: Page, context: BrowserContext, service: string
 
     const start = performance.now();
 
-    await page
-      .getByRole('button', {
-        name: buttonName,
-        exact: true,
-      })
-      .click();
+    const [download] = await Promise.all([
+      page.waitForEvent('download'),
+      page
+        .getByRole('button', {
+          name: buttonName,
+          exact: true,
+        })
+        .click(),
+    ]);
+
+    const folderName = testName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+    const downloadDir = path.join(RESULT_DIR, folderName);
+    await mkdir(downloadDir, { recursive: true });
+    await download.saveAs(path.join(downloadDir, download.suggestedFilename()));
 
     const closeButton = page.getByRole('button', {
       name: 'Close',
@@ -172,47 +189,50 @@ async function testLiveness(page: Page, context: BrowserContext, service: string
   }
 }
 
-test('self managed service liveness', async ({ page, context }) => {
+test('self managed service liveness', async ({ page, context }, testInfo) => {
   let current = 1
-  
+
   do {
     await testLiveness(
       page,
       context,
       'self-managed',
       'Self Managed Service Liveness Check',
+      testInfo.title,
     );
 
     current++
-  } while(current <= ITERATION);
+  } while (current <= ITERATION);
 });
 
-test('managed service liveness', async ({ page, context }) => {
+test('managed service liveness', async ({ page, context }, testInfo) => {
   let current = 1
-  
+
   do {
     await testLiveness(
       page,
       context,
       'managed',
       'Managed Service Liveness Check',
+      testInfo.title,
     );
 
     current++
-  } while(current <= ITERATION);
+  } while (current <= ITERATION);
 });
 
-test('on device service liveness', async ({ page, context }) => {
+test('on device service liveness', async ({ page, context }, testInfo) => {
   let current = 1
-  
+
   do {
     await testLiveness(
       page,
       context,
       'on-device',
       'On Device Service Liveness Check',
+      testInfo.title,
     );
 
     current++
-  } while(current <= ITERATION);
+  } while (current <= ITERATION);
 });
