@@ -24,11 +24,12 @@ export default class OnDeviceService implements InferenceServiceAdapter {
     console.log("Liveness model loaded");
   }
 
-  async Predict(imageBlob: Blob, _requestId: string): Promise<InferenceResult> {
+  async Predict(imageBlob: Blob, requestId: string): Promise<InferenceResult> {
     if (!this.model) {
       throw new Error("Model is not initialized")
     }
 
+    const startedAt = performance.now();
     const image = await createImageBitmap(imageBlob);
 
     try {
@@ -81,7 +82,7 @@ export default class OnDeviceService implements InferenceServiceAdapter {
       inputTensor.delete();
       results[0].delete();
 
-      return {
+      const inferenceResult = {
         live,
         spoof,
         result:
@@ -89,6 +90,16 @@ export default class OnDeviceService implements InferenceServiceAdapter {
             ? "Live"
             : "Spoof",
       };
+
+      console.log({
+        duration_ms: performance.now() - startedAt,
+        msg: "inference success",
+        service: "client-side-inference",
+        timestamp: new Date().toISOString(),
+        request_id: requestId,
+      });
+
+      return inferenceResult;
     } finally {
       image.close();
     }
